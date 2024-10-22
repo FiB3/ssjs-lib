@@ -45,3 +45,5 @@ Thumbs.db
 .vscode/
 tests.ssjs
 *ssjs-vsc.json
+
+testing/*

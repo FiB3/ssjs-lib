@@ -67,7 +67,13 @@
  * 
  * @param {string} category - The name of the script / category used to identify the log
  */
-function logger(category) {
+function logger(category, muteErrors) {
+    // init console as errors from here can not be thrown
+    var console = new console();
+    if (muteErrors) {
+        console.mute();
+    }
+    
     if (!category) {
         console.error("[logger] - No Logger category provided.");
     }
@@ -105,7 +111,7 @@ function logger(category) {
      */
     var convert = function(message) {
         arr = [];
-        message.forEach(function (s) {(typeof s == "object") ? arr.push(Stringify(s)) : arr.push(s);});
+        forEach(message, function (s) {(typeof s == "object") ? arr.push(Stringify(s)) : arr.push(s);});
         return arr.join(" ");
     }
 
@@ -130,10 +136,6 @@ function logger(category) {
     
         return message.length <= maximumLength ? message : message.substring(0, maximumLength - 3) + '...';
     }
-
-
-    // init console as errors from here can not be thrown
-    var console = new console();
 
     this.trace = function() { this.message = { level:"TRACE",args:arguments }; this.appenders(); }
     this.debug = function() { this.message = { level:"DEBUG",args:arguments }; this.appenders(); }
@@ -323,10 +325,10 @@ function logger(category) {
     this.consoleAppender = function() {
         var message = format(strip(this.message.args)),
             colorMessage = "%c"+message[0],
-            logMethod = (["TRACE","INFO","WARN","ERROR"].includes(this.message.level)) ? this.message.level.toLowerCase() : "log";
+            logMethod = (includes(["TRACE","INFO","WARN","ERROR"], this.message.level)) ? this.message.level.toLowerCase() : "log";
 
-        message.splice(0, 1, colorMessage);
-        message.splice(1, 0, "color:" + this.levels[this.message.level].color);
+        splice(message, 0, 1, colorMessage);
+        splice(message, 1, 0, "color:" + this.levels[this.message.level].color);
 
         Platform.Response.Write("<script>console."+logMethod+".apply(console," + Platform.Function.Stringify(message) + ")<\/script>");
     }
