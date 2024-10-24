@@ -9,7 +9,7 @@
 
     var LIB_BASE_URL = "https://raw.githubusercontent.com/FiB3/ssjs-lib/master";
 
-    var librariesImports = {
+    /* var librariesImports = {
         core: {
             // loaded together with all the other libraries:
             standard: libBaseUrl + 'core/lib_standard.ssjs',
@@ -33,7 +33,7 @@
         polyfill: {
             polyfill:   libBaseUrl + 'core/lib_polyfill.ssjs'
         }
-    };
+    }; */
 
     // POLYFILL
     if (!Array.from) {
@@ -133,7 +133,7 @@
         var messageLength = Number(postData.msgLen) || 1000;
 
         // git base URL
-        libBaseUrl = (devMode=="1") ? '' : LIB_BASE_URL;
+        /* libBaseUrl = (devMode=="1") ? '' : LIB_BASE_URL; */
 
         // init wsproxy
         api = new Script.Util.WSProxy();
@@ -325,7 +325,6 @@
                     var libCustomerKey = prefix.toLowerCase() +' -ssjs-lib-' + libName + '-' + version,
                         url = librariesImports[blockNames][libName],
                         folder = settings.folderId[ASSET_LIB_FOLDER_KEY];
-                    /* keys.push(libCustomerKey); */
                     if (libCustomerKey === 'core') {
                         coreLibKey = libCustomerKey;
                     }
@@ -337,16 +336,21 @@
                 var standardLibLoader = "";
                 if (blockNames !== 'core') {
                     // add standard lib loader:
-                    standardLibLoader += '<script runat=\"server\" language=\"javascript\">';
+                    standardLibLoader += '<script runat="server" language="javascript">';
                     standardLibLoader += 'if (typeof(startsWith) === "function" && typeof(logger) === "function") {';
                     standardLibLoader += '    Platform.Variable.SetValue(@ssjsCoreLibLoaded101, 1);';
                     standardLibLoader += '}';
                     standardLibLoader += '<\/script>';
 
-                    standardLibLoader += '%%[\n'
-                    standardLibLoader += '  IF @ssjsCoreLibLoaded101 != 1 THEN\n';
+                    standardLibLoader += '\%\%[\n';
+
+                    // `IF` in AMPScript breaks the script - even when commented out!
+                    // so we have to split it into two parts
+                    standardLibLoader += '  IF ' + '@ssjsCoreLibLoaded101 != 1 ';
+                    standardLibLoader += 'THEN\n';
                     standardLibLoader += '    ' + getLibBlockCode(coreLibKey);
-                    standardLibLoader +=  '  ENDIF' + '\n]%%';
+                    standardLibLoader +=  '  ENDIF';
+                    standardLibLoader += '\n]\%\%';
                 }
 
                 libLoaderCode = "%%[\n" + libSettingsBlockLoader + '\n' + standardLibLoader + '\n' + keys.join("\n") + "\n]%%";
@@ -434,7 +438,6 @@
         Variable.SetValue("@hasErrors", 1);
         console.error(e);
     }
-
 
     function setupDev() {
         var folderName = 'Asset SSJS Lib Test';
